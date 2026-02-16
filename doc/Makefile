@@ -1,4 +1,4 @@
-NAME = pep2codons
+NAME = coder
 
 # ---------- Helper scripts ----------
 

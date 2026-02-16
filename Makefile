@@ -1,4 +1,4 @@
-NAME = pep2codons
+NAME = coder
 
 # ---------- Helper scripts ----------
 
@@ -7,11 +7,11 @@ PRETANGLE := awk -f scripts/preTangle.awk
 
 # ---------- Basic tangling ----------
 
-all: $(NAME).go lang_actions
+all: $(NAME).go
 
 $(NAME).go: $(NAME).org
 	$(ORG2NW) $(NAME).org | $(PRETANGLE) | notangle -R$(NAME).go > $(NAME).go
-	
+
 # ---------- Basic make subcommands ----------
 
 .PHONY: doc clean
@@ -23,10 +23,19 @@ clean:
 	rm -f $(NAME) *.go
 	make clean -C doc
 
+publish:
+	if mountpoint -q ~/owncloud; then \
+		cp doc/$(EXE)Doc.pdf ~/owncloud/github_docs; \
+	fi
+
 # ---------- Language actions area ----------
 
-lang_actions: $(NAME).go
+lang_actions: $(NAME).go go.mod go.sum
 	gofmt -w $(NAME).go
-	go mod init $(NAME).go
-	go mod tidy
 	go build $(NAME).go
+
+go.mod:
+	go mod init $(NAME).go
+
+go.sum: go.mod $(NAME).go
+	go mod tidy

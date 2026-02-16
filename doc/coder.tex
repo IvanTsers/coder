@@ -1,0 +1,418 @@
+\nwfilename{}\nwbegindocs{0}\nwenddocs{}\nwbegindocs{1}\nwdocspar% ===> this file was generated automatically by noweave --- better not edit it
+The program \texttt{coder} has hooks for imports, code tables, the
+init function, and the main function.
+\nwenddocs{}\nwbegincode{2}\sublabel{NW0-rlbVH-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-rlbVH-1}}}\moddef{coder.go~{\nwtagstyle{}\subpageref{NW0-rlbVH-1}}}\endmoddef\nwstartdeflinemarkup\nwenddeflinemarkup
+package main
+import (
+          \LA{}Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}\RA{}
+)
+
+\LA{}Variables~{\nwtagstyle{}\subpageref{NW0-78Ang-1}}\RA{}
+
+func init() \{
+          \LA{}Init function~{\nwtagstyle{}\subpageref{NW0-2G0MHJ-1}}\RA{}
+\}
+
+func main() \{
+          \LA{}Main function~{\nwtagstyle{}\subpageref{NW0-32ejEQ-1}}\RA{}
+\}
+\nwnotused{coder.go}\nwendcode{}\nwbegindocs{3}\nwdocspar
+\subsection{Coding rules}
+We use the following table of non-degenerate codons, which is based on
+the Bacterial, Archaeal and Plant Plastid Code
+(\texttt{transl\_table=11})\footnote{\url{https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi#SG11}}:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c c}
+\hline
+Residue & Codon \\
+\hline
+\texttt{A} & \texttt{GCT} \\
+\texttt{R} & \texttt{CGT} \\
+\texttt{N} & \texttt{AAT} \\
+\texttt{D} & \texttt{GAT} \\
+\texttt{C} & \texttt{TGT} \\
+\texttt{Q} & \texttt{CAA} \\
+\texttt{E} & \texttt{GAA} \\
+\texttt{G} & \texttt{GGT} \\
+\texttt{H} & \texttt{CAT} \\
+\texttt{I} & \texttt{ATT} \\
+\texttt{L} & \texttt{CTG} \\
+\texttt{K} & \texttt{AAA} \\
+\texttt{M} & \texttt{ATG} \\
+\texttt{F} & \texttt{TTT} \\
+\texttt{P} & \texttt{CCT} \\
+\texttt{S} & \texttt{TCT} \\
+\texttt{T} & \texttt{ACT} \\
+\texttt{W} & \texttt{TGG} \\
+\texttt{Y} & \texttt{TAT} \\
+\texttt{V} & \texttt{GTT} \\
+\texttt{*} & \texttt{TAA} \\
+\hline
+\end{tabular}
+\end{table}
+To implement this table, we initialize three byte arrays:
+\texttt{codons}, \texttt{nuclCodes}, and \texttt{residues}. These
+arrays are to be filled with values.
+\nwenddocs{}\nwbegincode{4}\sublabel{NW0-78Ang-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-78Ang-1}}}\moddef{Variables~{\nwtagstyle{}\subpageref{NW0-78Ang-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwenddeflinemarkup
+var codons [256][3]byte
+var nuclCodes [256]byte
+var residues [64]byte
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{5}\nwdocspar
+Inside the \texttt{init} function, we fill \texttt{codons},
+\texttt{nuclCodes}, and \texttt{residues} with values.
+\nwenddocs{}\nwbegincode{6}\sublabel{NW0-2G0MHJ-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-2G0MHJ-1}}}\moddef{Init function~{\nwtagstyle{}\subpageref{NW0-2G0MHJ-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwenddeflinemarkup
+\LA{}Fill codons~{\nwtagstyle{}\subpageref{NW0-24BJEj-1}}\RA{}
+\LA{}Fill nucleotide codes~{\nwtagstyle{}\subpageref{NW0-4Ump0F-1}}\RA{}
+\LA{}Fill residues~{\nwtagstyle{}\subpageref{NW0-34MV8I-1}}\RA{}
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{7}\nwdocspar
+\subsubsection{Codon lookup array (AA-to-DNA)}
+The program \texttt{coder} uses the lookup array \texttt{codons} to
+convert an amino acid residue to the corresponding DNA codon,
+The \texttt{codons} array has the 20 amino acid residue bytes and an
+asterisk as indexes, and arrays of DNA codons as values. Indexes other
+than the meaningful 21 bytes are filled with triplets of unknown
+nucleotides \texttt{N}.
+\nwenddocs{}\nwbegincode{8}\sublabel{NW0-24BJEj-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-24BJEj-1}}}\moddef{Fill codons~{\nwtagstyle{}\subpageref{NW0-24BJEj-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-2G0MHJ-1}}\nwenddeflinemarkup
+for i := range codons \{
+          codons[i] = [3]byte\{'N','N','N'\}
+\}
+
+codons['A'] = [3]byte\{'G','C','T'\}
+codons['R'] = [3]byte\{'C','G','T'\}
+codons['N'] = [3]byte\{'A','A','T'\}
+codons['D'] = [3]byte\{'G','A','T'\}
+codons['C'] = [3]byte\{'T','G','T'\}
+codons['Q'] = [3]byte\{'C','A','A'\}
+codons['E'] = [3]byte\{'G','A','A'\}
+codons['G'] = [3]byte\{'G','G','T'\}
+codons['H'] = [3]byte\{'C','A','T'\}
+codons['I'] = [3]byte\{'A','T','T'\}
+codons['L'] = [3]byte\{'C','T','G'\}
+codons['K'] = [3]byte\{'A','A','A'\}
+codons['M'] = [3]byte\{'A','T','G'\}
+codons['F'] = [3]byte\{'T','T','T'\}
+codons['P'] = [3]byte\{'C','C','T'\}
+codons['S'] = [3]byte\{'T','C','T'\}
+codons['T'] = [3]byte\{'A','C','T'\}
+codons['W'] = [3]byte\{'T','G','G'\}
+codons['Y'] = [3]byte\{'T','A','T'\}
+codons['V'] = [3]byte\{'G','T','T'\}
+codons['*'] = [3]byte\{'T','A','A'\}
+\nwused{\\{NW0-2G0MHJ-1}}\nwendcode{}\nwbegindocs{9}\nwdocspar
+The array \texttt{residues} is used to convert a DNA codon to the
+corresponding residue. A DNA codon cosists of 3 bytes, which are
+\texttt{A}, \texttt{C}, \texttt{G}, or \texttt{T}. A 3-byte array
+cannot be directly used as an index to the array of \texttt{residues},
+so we will represent the codon triplets as integer indexes.
+
+We first encode the nucleotides with 2-bit integers:
+\begin{gather*}
+A = 0_{10} = 00_2 \\
+C = 1_{10} = 01_2 \\
+G = 2_{10} = 10_2 \\
+T = 3_{10} = 11_2
+\end{gather*}
+
+We fill the \texttt{nuclCodes} array with values:
+\begin{gather*}
+A = 0; C = 1; G = 2; T = 3 \\
+\end{gather*}
+Every other byte gets the invalid code \texttt{0xFF}.
+\nwenddocs{}\nwbegincode{10}\sublabel{NW0-4Ump0F-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-4Ump0F-1}}}\moddef{Fill nucleotide codes~{\nwtagstyle{}\subpageref{NW0-4Ump0F-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-2G0MHJ-1}}\nwenddeflinemarkup
+for i := range nuclCodes \{
+          nuclCodes[i] = 0xFF
+\}
+
+nuclCodes['A'] = 0
+nuclCodes['C'] = 1
+nuclCodes['G'] = 2
+nuclCodes['T'] = 3
+\nwused{\\{NW0-2G0MHJ-1}}\nwendcode{}\nwbegindocs{11}\nwdocspar
+\subsubsection{Amino acid residue lookup array (DNA-to-AA)}
+The 64 possible DNA 3-mers can be represented with 6-bit integers
+using bitwise \texttt{OR} and the nucleotide codes we have just
+defined. For example, let's take the codon \texttt{GCT} for
+alanine. In our encoding, it's \texttt{[$10_2$, $01_2$, $11_2$]}. To
+convert this array into a 6-bit index, we use the formula:
+
+\begin{gather*}
+i = 10_2 \ll 4 \mathbin{|} 01_2 \ll 2 \mathbin{|} 11_2
+\end{gather*}
+
+We fill the \texttt{residues} array with 21 residues under indexes
+that we calculate using the 2-bit nucleotide codes, which we look up
+in the \texttt{nuclCodes} array using the codons we defined above. DNA
+triplets not defined in \texttt{codons} will correspond to the
+undefined residue \texttt{X}.
+\nwenddocs{}\nwbegincode{12}\sublabel{NW0-34MV8I-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-34MV8I-1}}}\moddef{Fill residues~{\nwtagstyle{}\subpageref{NW0-34MV8I-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-2G0MHJ-1}}\nwenddeflinemarkup
+for i := range residues \{
+          residues[i] = 'X'
+\}
+
+for _, r := range []byte("ARNDCQEGHILKMFPSTWYV*") \{
+          c := codons[r]
+          c0 := nuclCodes[c[0]]
+          c1 := nuclCodes[c[1]]
+          c2 := nuclCodes[c[2]]
+        
+          idx := (c0 << 4) | (c1 << 2) | c2
+          residues[idx] = r
+\}
+\nwused{\\{NW0-2G0MHJ-1}}\nwendcode{}\nwbegindocs{13}\nwdocspar
+\section{Main function and CLI}
+In the main function, we declare the options, set the usage, set a
+logger, parse the options and respond to them, read and process the
+input, and report the results.
+\nwenddocs{}\nwbegincode{14}\sublabel{NW0-32ejEQ-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-32ejEQ-1}}}\moddef{Main function~{\nwtagstyle{}\subpageref{NW0-32ejEQ-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwenddeflinemarkup
+\LA{}Declare options~{\nwtagstyle{}\subpageref{NW0-3vwOCc-1}}\RA{}
+\LA{}Set usage~{\nwtagstyle{}\subpageref{NW0-3sgS7U-1}}\RA{}
+\LA{}Set logger~{\nwtagstyle{}\subpageref{NW0-1iigIi-1}}\RA{}
+\LA{}Parse options~{\nwtagstyle{}\subpageref{NW0-3aicu-1}}\RA{}
+\LA{}Respond to options~{\nwtagstyle{}\subpageref{NW0-3A8HKj-1}}\RA{}
+\LA{}Read input~{\nwtagstyle{}\subpageref{NW0-16MfgY-1}}\RA{}
+\LA{}Process input~{\nwtagstyle{}\subpageref{NW0-3xDhPc-1}}\RA{}
+\LA{}Report results~{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}\RA{}
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{15}\nwdocspar
+The program \texttt{coder} has two options:
+
+\begin{enumerate}
+\itemsep0em
+\item encode the input peptide sequences with non-degenerate codons;
+\item decode the input non-degenerate codons as a peptide sequences.
+\end{enumerate}
+
+We declare those.
+\nwenddocs{}\nwbegincode{16}\sublabel{NW0-3vwOCc-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3vwOCc-1}}}\moddef{Declare options~{\nwtagstyle{}\subpageref{NW0-3vwOCc-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+optE := flag.Bool("e", false, "encode peptides with DNA codons")
+optD := flag.Bool("d", false, "decode DNA codons as peptides")
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{17}\nwdocspar
+We import \texttt{flag}.
+\nwenddocs{}\nwbegincode{18}\sublabel{NW0-YwBeo-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{\relax}{NW0-YwBeo-2}\nwenddeflinemarkup
+"flag"
+\nwalsodefined{\\{NW0-YwBeo-2}\\{NW0-YwBeo-3}\\{NW0-YwBeo-4}\\{NW0-YwBeo-5}}\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{19}\nwdocspar
+The usage consists of the actual usage message, an explanation of the
+purpose of \texttt{coder}, and an example command.
+\nwenddocs{}\nwbegincode{20}\sublabel{NW0-3sgS7U-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3sgS7U-1}}}\moddef{Set usage~{\nwtagstyle{}\subpageref{NW0-3sgS7U-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+u := "coder [option]..."
+p := "Encode or decode a biological sequence \\n" +
+          "using a non-degenerate table of DNA codons."
+e := "coder -e peptide.faa\\ncoder -d codons.fna"
+clio.Usage(u, p, e)
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{21}\nwdocspar
+We import \texttt{clio}.
+\nwenddocs{}\nwbegincode{22}\sublabel{NW0-YwBeo-2}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-2}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\plusendmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{NW0-YwBeo-1}{NW0-YwBeo-3}\nwenddeflinemarkup
+"github.com/evolbioinf/clio"
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{23}\nwdocspar
+We set the standard logger \texttt{log} to print the program's name in
+message prefixes.
+\nwenddocs{}\nwbegincode{24}\sublabel{NW0-1iigIi-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-1iigIi-1}}}\moddef{Set logger~{\nwtagstyle{}\subpageref{NW0-1iigIi-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+log.SetPrefix("coder: ")
+log.SetFlags(log.Lmsgprefix)
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{25}\nwdocspar
+We import \texttt{log}.
+\nwenddocs{}\nwbegincode{26}\sublabel{NW0-YwBeo-3}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-3}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\plusendmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{NW0-YwBeo-2}{NW0-YwBeo-4}\nwenddeflinemarkup
+"log"
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{27}\nwdocspar
+We parse the options and non-flag arguments.
+\nwenddocs{}\nwbegincode{28}\sublabel{NW0-3aicu-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3aicu-1}}}\moddef{Parse options~{\nwtagstyle{}\subpageref{NW0-3aicu-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+flag.Parse()
+args := flag.Args()
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{29}\nwdocspar
+We respond to the usage of \texttt{-d} and \texttt{-e}: if neither or
+both are used, we ask the user to choose one and exit. We also check
+if exactly one non-flag argument is specified. This argument is
+expected to be the input file name.
+\nwenddocs{}\nwbegincode{30}\sublabel{NW0-3A8HKj-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3A8HKj-1}}}\moddef{Respond to options~{\nwtagstyle{}\subpageref{NW0-3A8HKj-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+edBoth := *optE && *optD
+edNone := *optE == false && *optD == false
+if edNone || edBoth \{
+          log.Fatal("please use either encode or decode mode")
+\}
+
+if len(args) != 1 \{
+          log.Fatal("please specify the input file")
+\}
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{31}\nwdocspar
+The first non-flag argument is the path to the input file. We try to
+open the file and treat any error as fatal. If there were no errors,
+we read all \texttt{fasta} entries from the input file.
+\nwenddocs{}\nwbegincode{32}\sublabel{NW0-16MfgY-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-16MfgY-1}}}\moddef{Read input~{\nwtagstyle{}\subpageref{NW0-16MfgY-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+path := args[0]
+file, err := os.Open(path)
+if err != nil \{
+          log.Fatal("couldn't open file %v: %v", path, err)
+\}
+sequences := fastautils.ReadAll(file)
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{33}\nwdocspar
+We read \texttt{os}, \texttt{fasta}, and \texttt{fastautils}.
+\nwenddocs{}\nwbegincode{34}\sublabel{NW0-YwBeo-4}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-4}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\plusendmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{NW0-YwBeo-3}{NW0-YwBeo-5}\nwenddeflinemarkup
+"os"
+"github.com/evolbioinf/fasta"
+"github.com/ivantsers/fastautils"
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{35}\nwdocspar
+We initialize the slice of result sequences and process the
+input. There are two ways to deal with the input: either encode amino
+acid residues, or decode DNA codons, whichever the user has chosen.
+\nwenddocs{}\nwbegincode{36}\sublabel{NW0-3xDhPc-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3xDhPc-1}}}\moddef{Process input~{\nwtagstyle{}\subpageref{NW0-3xDhPc-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+var result []*fasta.Sequence
+
+if *optE \{
+          \LA{}Encode residues~{\nwtagstyle{}\subpageref{NW0-OurjP-1}}\RA{}
+\}
+
+if *optD \{
+          \LA{}Decode codons~{\nwtagstyle{}\subpageref{NW0-28FOO3-1}}\RA{}
+\}
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{37}\nwdocspar
+\subsubsection{Encode amino acid residues}
+We encode each input peptide sequence with codons. For this, we get
+the original header and data, the we initialize a slice with a tripled
+capacity of the original data. We also initialize a counter
+\texttt{j}, which tracks the current position in the growing
+slice. Then for each byte of the original data we add nucleotides of
+the corresponding codons to the slice we have just initialized. Once
+we are done, we create a new \texttt{fasta} sequence and append it to
+the result.
+\nwenddocs{}\nwbegincode{38}\sublabel{NW0-OurjP-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-OurjP-1}}}\moddef{Encode residues~{\nwtagstyle{}\subpageref{NW0-OurjP-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-3xDhPc-1}}\nwenddeflinemarkup
+for _, seq := range sequences \{
+          h := seq.Header()
+          d := seq.Data()
+          encodedData := make([]byte, 3 * len(d))
+          j := 0
+          for _, r := range d \{
+                  \LA{}Add nucleotides to the encoded data~{\nwtagstyle{}\subpageref{NW0-3KPO6e-1}}\RA{}
+          \}
+          encodedSeq := fasta.NewSequence(h, encodedData)
+          result = append(result, encodedSeq)
+\}
+\nwused{\\{NW0-3xDhPc-1}}\nwendcode{}\nwbegindocs{39}\nwdocspar
+We get get a residue's codon from the lookup table and insert the
+nucleotides one by one into the encoded data. After that, we add three
+to the position tracker \texttt{j}.
+\nwenddocs{}\nwbegincode{40}\sublabel{NW0-3KPO6e-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3KPO6e-1}}}\moddef{Add nucleotides to the encoded data~{\nwtagstyle{}\subpageref{NW0-3KPO6e-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-OurjP-1}}\nwenddeflinemarkup
+c := codons[r]
+encodedData[j] = c[0]
+encodedData[j+1] = c[1]
+encodedData[j+2] = c[2]
+j += 3
+\nwused{\\{NW0-OurjP-1}}\nwendcode{}\nwbegindocs{41}\nwdocspar
+\subsubsection{Decode DNA codons}
+We decode each triplet of the input nucleotide sequence as amino acid
+residues. For this, we get the original header and data, then we try
+to decode the sequence using three reading frames (+0, +1, +2
+nucleotides). After the decoding, we create a new \texttt{fasta}
+sequence that using the best reading frame data and append it to the
+result.
+\nwenddocs{}\nwbegincode{42}\sublabel{NW0-28FOO3-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-28FOO3-1}}}\moddef{Decode codons~{\nwtagstyle{}\subpageref{NW0-28FOO3-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-3xDhPc-1}}\nwenddeflinemarkup
+for _, seq := range sequences \{
+          h := seq.Header()
+          d := seq.Data()
+          lenD := len(d)
+          bestFrameScore := 0
+          bestFrameData := make([]byte, lenD / 3)
+          bestFrameName := 0
+          for f := 0; f < 3; f++ \{
+                  \LA{}Decode a reading frame~{\nwtagstyle{}\subpageref{NW0-4ej5Eb-1}}\RA{}
+          \}
+          newH := fmt.Sprintf("%s frame=%d", h, bestFrameName)
+          decodedSeq := fasta.NewSequence(newH, bestFrameData)
+          result = append(result, decodedSeq)
+\}
+\nwused{\\{NW0-3xDhPc-1}}\nwendcode{}\nwbegindocs{43}\nwdocspar
+we initialize a slice for decoded data with a one-third capacity of
+the original data. We also initialize a counter \texttt{j}, which
+tracks the current position in the growing slice. We also initialize
+the frame's score. Then for each three bytes of the original data we
+add amino acid residues to the decoded data. After that we score the
+current reading frame and update the best score and data.
+\nwenddocs{}\nwbegincode{44}\sublabel{NW0-4ej5Eb-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-4ej5Eb-1}}}\moddef{Decode a reading frame~{\nwtagstyle{}\subpageref{NW0-4ej5Eb-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-28FOO3-1}}\nwenddeflinemarkup
+frameLen := (lenD - f) / 3
+frameData := make([]byte, frameLen)
+j := 0
+frameScore := 0
+for i := f; i + 2 < lenD; i += 3 \{
+          \LA{}Add amino acid residues to the encoded data~{\nwtagstyle{}\subpageref{NW0-3lX0LE-1}}\RA{}
+\}
+\LA{}Score the reading frame~{\nwtagstyle{}\subpageref{NW0-1UjVQ-1}}\RA{}
+\LA{}Update the best frame score and data~{\nwtagstyle{}\subpageref{NW0-3YKixg-1}}\RA{}
+\nwused{\\{NW0-28FOO3-1}}\nwendcode{}\nwbegindocs{45}\nwdocspar
+We convert the current codon's nucleotides to 2-bit codes and validate
+the codes. After that, we calculate a 6-bit index for the current
+codon and use it to get corresponding residues from the lookup
+array. We append the residue to the decoded data and increase the
+current position counter.
+\nwenddocs{}\nwbegincode{46}\sublabel{NW0-3lX0LE-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3lX0LE-1}}}\moddef{Add amino acid residues to the encoded data~{\nwtagstyle{}\subpageref{NW0-3lX0LE-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-4ej5Eb-1}}\nwenddeflinemarkup
+c0 := nuclCodes[d[i]]
+c1 := nuclCodes[d[i + 1]]
+c2 := nuclCodes[d[i + 2]]
+\LA{}Validate nucleotide codes~{\nwtagstyle{}\subpageref{NW0-4EIuub-1}}\RA{}
+idx := (c0 << 4) | (c1 << 2) | c2
+frameData[j] = residues[idx]
+j++
+\nwused{\\{NW0-4ej5Eb-1}}\nwendcode{}\nwbegindocs{47}\nwdocspar
+We append an undefined residue if any of the nucleotide codes in the
+triplet is invalid.
+\nwenddocs{}\nwbegincode{48}\sublabel{NW0-4EIuub-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-4EIuub-1}}}\moddef{Validate nucleotide codes~{\nwtagstyle{}\subpageref{NW0-4EIuub-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-3lX0LE-1}}\nwenddeflinemarkup
+if c0 == 0xFF || c1 == 0xFF || c2 == 0xFF \{
+          frameData[j] = 'X'
+          j++
+          continue
+\}
+\nwused{\\{NW0-3lX0LE-1}}\nwendcode{}\nwbegindocs{49}\nwdocspar
+The score of the reading frame is the number of defined residues, that
+is, non-\texttt{X}. We treat the translation termination \texttt{*} as
+a defined residue.
+\nwenddocs{}\nwbegincode{50}\sublabel{NW0-1UjVQ-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-1UjVQ-1}}}\moddef{Score the reading frame~{\nwtagstyle{}\subpageref{NW0-1UjVQ-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-4ej5Eb-1}}\nwenddeflinemarkup
+for _, r := range frameData \{
+          if r != 'X' && r != '*' \{
+                  frameScore++
+          \}
+\}
+\nwused{\\{NW0-4ej5Eb-1}}\nwendcode{}\nwbegindocs{51}\nwdocspar
+We update the best score and the best frame data if the current frame
+score is greater than the current best score.
+\nwenddocs{}\nwbegincode{52}\sublabel{NW0-3YKixg-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3YKixg-1}}}\moddef{Update the best frame score and data~{\nwtagstyle{}\subpageref{NW0-3YKixg-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-4ej5Eb-1}}\nwenddeflinemarkup
+if frameScore > bestFrameScore \{
+          bestFrameScore = frameScore
+          bestFrameData = frameData
+          bestFrameName = f
+\}
+\nwused{\\{NW0-4ej5Eb-1}}\nwendcode{}\nwbegindocs{53}\nwdocspar
+We print the result sequence to the \texttt{stdout}.
+\nwenddocs{}\nwbegincode{54}\sublabel{NW0-14iiiY-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}}\moddef{Report results~{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+for _, res := range result \{
+          fmt.Println(res)
+\}
+\nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{55}\nwdocspar
+We import \texttt{fmt}.
+\nwenddocs{}\nwbegincode{56}\sublabel{NW0-YwBeo-5}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-5}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\plusendmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{NW0-YwBeo-4}{\relax}\nwenddeflinemarkup
+"fmt"
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}
+
+\nwixlogsorted{c}{{Add amino acid residues to the encoded data}{NW0-3lX0LE-1}{\nwixu{NW0-4ej5Eb-1}\nwixd{NW0-3lX0LE-1}}}%
+\nwixlogsorted{c}{{Add nucleotides to the encoded data}{NW0-3KPO6e-1}{\nwixu{NW0-OurjP-1}\nwixd{NW0-3KPO6e-1}}}%
+\nwixlogsorted{c}{{coder.go}{NW0-rlbVH-1}{\nwixd{NW0-rlbVH-1}}}%
+\nwixlogsorted{c}{{Declare options}{NW0-3vwOCc-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3vwOCc-1}}}%
+\nwixlogsorted{c}{{Decode a reading frame}{NW0-4ej5Eb-1}{\nwixu{NW0-28FOO3-1}\nwixd{NW0-4ej5Eb-1}}}%
+\nwixlogsorted{c}{{Decode codons}{NW0-28FOO3-1}{\nwixu{NW0-3xDhPc-1}\nwixd{NW0-28FOO3-1}}}%
+\nwixlogsorted{c}{{Encode residues}{NW0-OurjP-1}{\nwixu{NW0-3xDhPc-1}\nwixd{NW0-OurjP-1}}}%
+\nwixlogsorted{c}{{Fill codons}{NW0-24BJEj-1}{\nwixu{NW0-2G0MHJ-1}\nwixd{NW0-24BJEj-1}}}%
+\nwixlogsorted{c}{{Fill nucleotide codes}{NW0-4Ump0F-1}{\nwixu{NW0-2G0MHJ-1}\nwixd{NW0-4Ump0F-1}}}%
+\nwixlogsorted{c}{{Fill residues}{NW0-34MV8I-1}{\nwixu{NW0-2G0MHJ-1}\nwixd{NW0-34MV8I-1}}}%
+\nwixlogsorted{c}{{Imports}{NW0-YwBeo-1}{\nwixu{NW0-rlbVH-1}\nwixd{NW0-YwBeo-1}\nwixd{NW0-YwBeo-2}\nwixd{NW0-YwBeo-3}\nwixd{NW0-YwBeo-4}\nwixd{NW0-YwBeo-5}}}%
+\nwixlogsorted{c}{{Init function}{NW0-2G0MHJ-1}{\nwixu{NW0-rlbVH-1}\nwixd{NW0-2G0MHJ-1}}}%
+\nwixlogsorted{c}{{Main function}{NW0-32ejEQ-1}{\nwixu{NW0-rlbVH-1}\nwixd{NW0-32ejEQ-1}}}%
+\nwixlogsorted{c}{{Parse options}{NW0-3aicu-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3aicu-1}}}%
+\nwixlogsorted{c}{{Process input}{NW0-3xDhPc-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3xDhPc-1}}}%
+\nwixlogsorted{c}{{Read input}{NW0-16MfgY-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-16MfgY-1}}}%
+\nwixlogsorted{c}{{Report results}{NW0-14iiiY-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-14iiiY-1}}}%
+\nwixlogsorted{c}{{Respond to options}{NW0-3A8HKj-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3A8HKj-1}}}%
+\nwixlogsorted{c}{{Score the reading frame}{NW0-1UjVQ-1}{\nwixu{NW0-4ej5Eb-1}\nwixd{NW0-1UjVQ-1}}}%
+\nwixlogsorted{c}{{Set logger}{NW0-1iigIi-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-1iigIi-1}}}%
+\nwixlogsorted{c}{{Set usage}{NW0-3sgS7U-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3sgS7U-1}}}%
+\nwixlogsorted{c}{{Update the best frame score and data}{NW0-3YKixg-1}{\nwixu{NW0-4ej5Eb-1}\nwixd{NW0-3YKixg-1}}}%
+\nwixlogsorted{c}{{Validate nucleotide codes}{NW0-4EIuub-1}{\nwixu{NW0-3lX0LE-1}\nwixd{NW0-4EIuub-1}}}%
+\nwixlogsorted{c}{{Variables}{NW0-78Ang-1}{\nwixu{NW0-rlbVH-1}\nwixd{NW0-78Ang-1}}}%
+
