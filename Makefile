@@ -7,7 +7,7 @@ PRETANGLE := awk -f scripts/preTangle.awk
 
 # ---------- Basic tangling ----------
 
-all: $(NAME).go
+all: $(NAME).go lang_actions
 
 $(NAME).go: $(NAME).org
 	$(ORG2NW) $(NAME).org | $(PRETANGLE) | notangle -R$(NAME).go > $(NAME).go
