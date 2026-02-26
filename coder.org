@@ -155,7 +155,7 @@ We fill the \texttt{residues} array with 21 residues under indexes
 that we calculate using the 2-bit nucleotide codes, which we look up
 in the \texttt{nuclCodes} array using the codons we defined above. DNA
 triplets not defined in \texttt{codons} will correspond to the
-undefined residue \texttt{X}.
+undefined residue '\texttt{X}'.
 #+end_export
 #+begin_src go <<Fill residues>>=
   for i := range residues {
@@ -189,12 +189,13 @@ input, and report the results.
   //<<Report results>>
 #+end_src
 #+begin_export latex
-The program \texttt{coder} has two options:
+The program \texttt{coder} has three options:
 
 \begin{enumerate}
   \itemsep0em
   \item encode the input peptide sequences with non-degenerate codons;
-  \item decode the input non-degenerate codons as a peptide sequences.
+  \item decode the input non-degenerate codons as a peptide sequences;
+  \item print non-synonimous substitutions as dots instead of \texttt{X}.
 \end{enumerate}
 
 We declare those.
@@ -202,6 +203,7 @@ We declare those.
 #+begin_src go <<Declare options>>=
   optE := flag.Bool("e", false, "encode peptides with DNA codons")
   optD := flag.Bool("d", false, "decode DNA codons as peptides")
+  optX := flag.Bool("x", false, "print dot '.' instead of 'X'")
 #+end_src
 #+begin_export latex
 We import \texttt{flag}.
@@ -398,8 +400,8 @@ current position counter.
   j++
 #+end_src
 #+begin_export latex
-We append an undefined residue if any of the nucleotide codes in the
-triplet is invalid.
+We append the undefined residue '\texttt{X}' to the data if any of the
+nucleotide codes in the triplet is invalid.
 #+end_export
 #+begin_src go <<Validate nucleotide codes>>=
   if c0 == 0xFF || c1 == 0xFF || c2 == 0xFF {
@@ -410,8 +412,8 @@ triplet is invalid.
 #+end_src
 #+begin_export latex
 The score of the reading frame is the number of defined residues, that
-is, non-\texttt{X}. We treat the translation termination \texttt{*} as
-a defined residue.
+is, not the undefined nucleotide \texttt{'X'} or translation
+termination '\texttt{*}'
 #+end_export
 #+begin_src go <<Score the reading frame>>=
   for _, r := range frameData {
@@ -432,9 +434,14 @@ score is greater than the current best score.
   }
 #+end_src
 #+begin_export latex
-We print the result sequence to the \texttt{stdout}.
+We replace '\texttt{X}' with dot if the user has opted for it. Then we
+print the result sequence to the \texttt{stdout}.
 #+end_export
 #+begin_src go <<Report results>>=
+  if *optX {
+	    //<<Replace Xs with dots>>
+  }
+
   for _, res := range result {
 	  fmt.Println(res)
   }
@@ -444,4 +451,18 @@ We import \texttt{fmt}.
 #+end_export
 #+begin_src go <<Imports>>=
   "fmt"
+#+end_src
+#+begin_export latex
+We iterate over the ouput sequences and subsitute \texttt{'X'} with
+\texttt{'.'}.
+#+end_export
+#+begin_src go <<Replace Xs with dots>>=
+  for _, res := range result {
+	  data := res.Data()
+	  for i, b := range data {
+		  if b == 'X' {
+			  data[i] = '.'
+		  }
+	  }
+  }
 #+end_src

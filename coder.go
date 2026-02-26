@@ -66,6 +66,7 @@ func init() {
 func main() {
 	optE := flag.Bool("e", false, "encode peptides with DNA codons")
 	optD := flag.Bool("d", false, "decode DNA codons as peptides")
+	optX := flag.Bool("x", false, "print dot '.' instead of 'X'")
 	u := "coder [option]..."
 	p := "Encode or decode a biological sequence \n" +
 		"using a non-degenerate table of DNA codons."
@@ -152,6 +153,17 @@ func main() {
 			result = append(result, decodedSeq)
 		}
 	}
+	if *optX {
+		for _, res := range result {
+			data := res.Data()
+			for i, b := range data {
+				if b == 'X' {
+					data[i] = '.'
+				}
+			}
+		}
+	}
+
 	for _, res := range result {
 		fmt.Println(res)
 	}
