@@ -145,7 +145,7 @@ We fill the \texttt{residues} array with 21 residues under indexes
 that we calculate using the 2-bit nucleotide codes, which we look up
 in the \texttt{nuclCodes} array using the codons we defined above. DNA
 triplets not defined in \texttt{codons} will correspond to the
-undefined residue \texttt{X}.
+undefined residue '\texttt{X}'.
 \nwenddocs{}\nwbegincode{12}\sublabel{NW0-34MV8I-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-34MV8I-1}}}\moddef{Fill residues~{\nwtagstyle{}\subpageref{NW0-34MV8I-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-2G0MHJ-1}}\nwenddeflinemarkup
 for i := range residues \{
           residues[i] = 'X'
@@ -175,18 +175,20 @@ input, and report the results.
 \LA{}Process input~{\nwtagstyle{}\subpageref{NW0-3xDhPc-1}}\RA{}
 \LA{}Report results~{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}\RA{}
 \nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{15}\nwdocspar
-The program \texttt{coder} has two options:
+The program \texttt{coder} has three options:
 
 \begin{enumerate}
 \itemsep0em
 \item encode the input peptide sequences with non-degenerate codons;
-\item decode the input non-degenerate codons as a peptide sequences.
+\item decode the input non-degenerate codons as a peptide sequences;
+\item print non-synonimous substitutions as dots instead of \texttt{X}.
 \end{enumerate}
 
 We declare those.
 \nwenddocs{}\nwbegincode{16}\sublabel{NW0-3vwOCc-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3vwOCc-1}}}\moddef{Declare options~{\nwtagstyle{}\subpageref{NW0-3vwOCc-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
 optE := flag.Bool("e", false, "encode peptides with DNA codons")
 optD := flag.Bool("d", false, "decode DNA codons as peptides")
+optX := flag.Bool("x", false, "print dot '.' instead of 'X'")
 \nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{17}\nwdocspar
 We import \texttt{flag}.
 \nwenddocs{}\nwbegincode{18}\sublabel{NW0-YwBeo-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{\relax}{NW0-YwBeo-2}\nwenddeflinemarkup
@@ -196,9 +198,9 @@ The usage consists of the actual usage message, an explanation of the
 purpose of \texttt{coder}, and an example command.
 \nwenddocs{}\nwbegincode{20}\sublabel{NW0-3sgS7U-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-3sgS7U-1}}}\moddef{Set usage~{\nwtagstyle{}\subpageref{NW0-3sgS7U-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
 u := "coder [option]..."
-p := "Encode or decode a biological sequence \\n" +
+p := "Encode or decode a biological sequence " +
           "using a non-degenerate table of DNA codons."
-e := "coder -e peptide.faa\\ncoder -d codons.fna"
+e := "coder -e peptide.faa\\n         coder -d codons.fna"
 clio.Usage(u, p, e)
 \nwused{\\{NW0-32ejEQ-1}}\nwendcode{}\nwbegindocs{21}\nwdocspar
 We import \texttt{clio}.
@@ -352,8 +354,8 @@ idx := (c0 << 4) | (c1 << 2) | c2
 frameData[j] = residues[idx]
 j++
 \nwused{\\{NW0-4ej5Eb-1}}\nwendcode{}\nwbegindocs{47}\nwdocspar
-We append an undefined residue if any of the nucleotide codes in the
-triplet is invalid.
+We append the undefined residue '\texttt{X}' to the data if any of the
+nucleotide codes in the triplet is invalid.
 \nwenddocs{}\nwbegincode{48}\sublabel{NW0-4EIuub-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-4EIuub-1}}}\moddef{Validate nucleotide codes~{\nwtagstyle{}\subpageref{NW0-4EIuub-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-3lX0LE-1}}\nwenddeflinemarkup
 if c0 == 0xFF || c1 == 0xFF || c2 == 0xFF \{
           frameData[j] = 'X'
@@ -362,8 +364,8 @@ if c0 == 0xFF || c1 == 0xFF || c2 == 0xFF \{
 \}
 \nwused{\\{NW0-3lX0LE-1}}\nwendcode{}\nwbegindocs{49}\nwdocspar
 The score of the reading frame is the number of defined residues, that
-is, non-\texttt{X}. We treat the translation termination \texttt{*} as
-a defined residue.
+is, not the undefined nucleotide \texttt{'X'} or translation
+termination '\texttt{*}'
 \nwenddocs{}\nwbegincode{50}\sublabel{NW0-1UjVQ-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-1UjVQ-1}}}\moddef{Score the reading frame~{\nwtagstyle{}\subpageref{NW0-1UjVQ-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-4ej5Eb-1}}\nwenddeflinemarkup
 for _, r := range frameData \{
           if r != 'X' && r != '*' \{
@@ -380,8 +382,13 @@ if frameScore > bestFrameScore \{
           bestFrameName = f
 \}
 \nwused{\\{NW0-4ej5Eb-1}}\nwendcode{}\nwbegindocs{53}\nwdocspar
-We print the result sequence to the \texttt{stdout}.
+We replace '\texttt{X}' with dot if the user has opted for it. Then we
+print the result sequence to the \texttt{stdout}.
 \nwenddocs{}\nwbegincode{54}\sublabel{NW0-14iiiY-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}}\moddef{Report results~{\nwtagstyle{}\subpageref{NW0-14iiiY-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-32ejEQ-1}}\nwenddeflinemarkup
+if *optX \{
+            \LA{}Replace Xs with dots~{\nwtagstyle{}\subpageref{NW0-47VzVn-1}}\RA{}
+\}
+
 for _, res := range result \{
           fmt.Println(res)
 \}
@@ -389,7 +396,19 @@ for _, res := range result \{
 We import \texttt{fmt}.
 \nwenddocs{}\nwbegincode{56}\sublabel{NW0-YwBeo-5}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-YwBeo-5}}}\moddef{Imports~{\nwtagstyle{}\subpageref{NW0-YwBeo-1}}}\plusendmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-rlbVH-1}}\nwprevnextdefs{NW0-YwBeo-4}{\relax}\nwenddeflinemarkup
 "fmt"
-\nwused{\\{NW0-rlbVH-1}}\nwendcode{}
+\nwused{\\{NW0-rlbVH-1}}\nwendcode{}\nwbegindocs{57}\nwdocspar
+We iterate over the ouput sequences and subsitute \texttt{'X'} with
+\texttt{'.'}.
+\nwenddocs{}\nwbegincode{58}\sublabel{NW0-47VzVn-1}\nwmargintag{{\nwtagstyle{}\subpageref{NW0-47VzVn-1}}}\moddef{Replace Xs with dots~{\nwtagstyle{}\subpageref{NW0-47VzVn-1}}}\endmoddef\nwstartdeflinemarkup\nwusesondefline{\\{NW0-14iiiY-1}}\nwenddeflinemarkup
+for _, res := range result \{
+          data := res.Data()
+          for i, b := range data \{
+                  if b == 'X' \{
+                          data[i] = '.'
+                  \}
+          \}
+\}
+\nwused{\\{NW0-14iiiY-1}}\nwendcode{}
 
 \nwixlogsorted{c}{{Add amino acid residues to the encoded data}{NW0-3lX0LE-1}{\nwixu{NW0-4ej5Eb-1}\nwixd{NW0-3lX0LE-1}}}%
 \nwixlogsorted{c}{{Add nucleotides to the encoded data}{NW0-3KPO6e-1}{\nwixu{NW0-OurjP-1}\nwixd{NW0-3KPO6e-1}}}%
@@ -407,6 +426,7 @@ We import \texttt{fmt}.
 \nwixlogsorted{c}{{Parse options}{NW0-3aicu-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3aicu-1}}}%
 \nwixlogsorted{c}{{Process input}{NW0-3xDhPc-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3xDhPc-1}}}%
 \nwixlogsorted{c}{{Read input}{NW0-16MfgY-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-16MfgY-1}}}%
+\nwixlogsorted{c}{{Replace Xs with dots}{NW0-47VzVn-1}{\nwixu{NW0-14iiiY-1}\nwixd{NW0-47VzVn-1}}}%
 \nwixlogsorted{c}{{Report results}{NW0-14iiiY-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-14iiiY-1}}}%
 \nwixlogsorted{c}{{Respond to options}{NW0-3A8HKj-1}{\nwixu{NW0-32ejEQ-1}\nwixd{NW0-3A8HKj-1}}}%
 \nwixlogsorted{c}{{Score the reading frame}{NW0-1UjVQ-1}{\nwixu{NW0-4ej5Eb-1}\nwixd{NW0-1UjVQ-1}}}%

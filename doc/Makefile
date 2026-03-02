@@ -15,7 +15,7 @@ VERSION = $(shell git log --pretty=format:"%cs, ${TAG}-%h" -n 1)
 all: $(NAME)Doc.pdf
 	echo $(VERSION) > version.txt
 	latex $(NAME)Doc
-	bibtex $(NAME)Doc
+#	bibtex $(NAME)Doc
 	latex $(NAME)Doc
 	latex $(NAME)Doc
 	dvipdf -dALLOWPSTRANSPARENCY $(NAME)Doc

@@ -25,7 +25,7 @@ clean:
 
 publish:
 	if mountpoint -q ~/owncloud; then \
-		cp doc/$(EXE)Doc.pdf ~/owncloud/github_docs; \
+		cp doc/$(NAME)Doc.pdf ~/owncloud/github_docs; \
 	fi
 
 # ---------- Language actions area ----------

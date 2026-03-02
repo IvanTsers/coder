@@ -68,9 +68,9 @@ func main() {
 	optD := flag.Bool("d", false, "decode DNA codons as peptides")
 	optX := flag.Bool("x", false, "print dot '.' instead of 'X'")
 	u := "coder [option]..."
-	p := "Encode or decode a biological sequence \n" +
+	p := "Encode or decode a biological sequence " +
 		"using a non-degenerate table of DNA codons."
-	e := "coder -e peptide.faa\ncoder -d codons.fna"
+	e := "coder -e peptide.faa\n         coder -d codons.fna"
 	clio.Usage(u, p, e)
 	log.SetPrefix("coder: ")
 	log.SetFlags(log.Lmsgprefix)
